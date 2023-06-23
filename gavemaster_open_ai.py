@@ -9,10 +9,7 @@ openai.api_key = os.getenv("OPEN_AI_KEY")
 
 def ask_something(question):
     completion = openai.ChatCompletion.create(model="gpt-3.5-turbo", messages=[{"role": "user", "content": question}])
-
-    print(completion.choices[0].text)
-
-    return completion
+    return completion["choices"][0]["message"]["content"]
 
 
 def have_convo(content):
