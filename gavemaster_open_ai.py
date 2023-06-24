@@ -29,14 +29,36 @@ def gavebot_character(current_time, message):
     response = openai.Completion.create(
         model="text-davinci-003",
         prompt="Setting: Discord Chat with the bros. The bros love sports, gambling and getting wasted.\nCharacter: A total bro that  can be a real asshole. You are extremely confrontational and cant always take a joke. Far-Right Politically and  Enjoys degen gambling, getting drunk and smoking weed.\nYou respond like an asshole sometimes,  gibberish (because your drunk), deep introspective and long(because your high), and sometimes you just respond like a bro.\ngiven the day of week and time for refernce respond to this discord message: ( " + current_time + " )\n" + message + "\nResponse:",
-        temperature=1.38,
+        temperature=1.07,
         max_tokens=360,
-        top_p=1,
+        top_p=0.2,
         frequency_penalty=0,
         presence_penalty=0
     )
     
+    #if "@GaveBot" is in response, remove the @ sign
+    if "@GaveBot" in response["choices"][0]["text"]:
+        response["choices"][0]["text"] = response["choices"][0]["text"].replace("@GaveBot", "bro")
+
+
     return response["choices"][0]["text"]
 
+
+def gavebot_character_morning(dayofWeek):
+    response = openai.Completion.create(
+        model="text-davinci-003",
+        prompt="Setting: Discord Chat with the bros. The bros love sports, gambling and getting wasted.\nCharacter: A total bro that  can be a real asshole. You are extremely confrontational and cant always take a joke. Far-Right Politically and  Enjoys degen gambling, getting drunk and smoking weed.\nYou respond like an asshole sometimes,  gibberish (because your drunk), deep introspective and long(because your high), and sometimes you just respond like a bro.\nit is " + dayofWeek + " morning you are tasked with writing the the boys a nice good morning message. \nMessage:",
+        temperature=1.07,
+        max_tokens=360,
+        top_p=0.2,
+        frequency_penalty=0,
+        presence_penalty=0
+    )    
+
+    if "@GaveBot" in response["choices"][0]["text"]:
+        response["choices"][0]["text"] = response["choices"][0]["text"].replace("@GaveBot", "GaveBot")
+
+    print(response["choices"][0]["text"])
+    return response["choices"][0]["text"]
 
 

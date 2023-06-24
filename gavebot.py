@@ -6,7 +6,7 @@ import pytz
 from datetime import datetime, timedelta
 from gm_logger import create_logger
 import random
-from gavemaster_open_ai import ask_something, gavebot_character
+from gavemaster_open_ai import ask_something, gavebot_character, gavebot_character_morning
 
 
 logger = create_logger('gavebot')
@@ -67,49 +67,56 @@ async def gmEveryone():
         message_channel = bot.get_channel(target_channel_id)
         logger.debug(f"Got channel {message_channel}")
         logger.debug("monday message sent @ " + str(current_time_est))
-        await message_channel.send("gm @everyone")
+        morning_message = gavebot_character_morning("Monday")
+        await message_channel.send(morning_message)
     
     elif day_of_week == 1 and current_time_est >= est_tuesday and current_time_est - timedelta(hours=4) < est_tuesday:
         logger.debug("Tuesday")
         message_channel = bot.get_channel(target_channel_id)
         logger.debug(f"Got channel {message_channel}")
         logger.debug("tuesday message sent @ " + str(current_time_est))
-        await message_channel.send("get a bag or kill yourself @everyone https://www.youtube.com/watch?v=mm9_v4idmJo ")
+        morning_message = gavebot_character_morning("Tuesday")
+        await message_channel.send(morning_message + " get a bag or kill yourself @everyone https://www.youtube.com/watch?v=mm9_v4idmJo ")
     
     elif day_of_week == 2 and current_time_est >= est_wednesday and current_time_est - timedelta(hours=4) < est_wednesday:
         logger.debug("Wednesday")
         message_channel = bot.get_channel(target_channel_id)
         logger.debug(f"Got channel {message_channel}")
         logger.debug("wednesday message sent @ " + str(current_time_est))
-        await message_channel.send("gm @everyone im wetttt affff for wet wednesdayss https://images-ext-2.discordapp.net/external/pNbIuq9ee5QCjHRYs-jLZKltevEIRpValp0nP3gzEDM/https/media.tenor.com/UfeLRq2_tr4AAAPo/wednesday-humpday.mp4 ")
+        morning_message = gavebot_character_morning("Wednesday")
+        await message_channel.send(morning_message)
     
     elif day_of_week == 3 and current_time_est >= est_thursday and current_time_est - timedelta(hours=4) < est_thursday:
         logger.debug("Thursday")
         message_channel = bot.get_channel(target_channel_id)
         logger.debug(f"Got channel {message_channel}")
         logger.debug("thursday message sent @ " + str(current_time_est))
-        await message_channel.send("gm @everyone")
+        morning_message = gavebot_character_morning("Thursday")
+        await message_channel.send(morning_message)
 
     elif day_of_week == 4 and current_time_est >= est_friday and current_time_est - timedelta(hours=4) < est_friday:
         logger.debug("Friday")
         message_channel = bot.get_channel(target_channel_id)
         logger.debug(f"Got channel {message_channel}")
         logger.debug("friday message sent @ " + str(current_time_est))
-        await message_channel.send("happy bmf @everyone https://tenor.com/view/walking-gif-25278075")
+        morning_message = gavebot_character_morning("Friday")
+        await message_channel.send("happy bmf @everyone https://tenor.com/view/walking-gif-25278075 " + morning_message)
 
     elif day_of_week == 5 and current_time_est >= est_saturday and current_time_est - timedelta(hours=4) < est_saturday:
         logger.debug("Saturday")
         message_channel = bot.get_channel(target_channel_id)
         logger.debug(f"Got channel {message_channel}")
         logger.debug("saturday message sent @ " + str(current_time_est))
-        await message_channel.send("gm @everyone ITS SLUTTY SATURDAY https://tenor.com/view/beurk-sexy-dance-funny-gif-13733130")
+        morning_message = gavebot_character_morning("Saturday")
+        await message_channel.send(morning_message)
 
     elif day_of_week == 6 and current_time_est >= est_sunday and current_time_est - timedelta(hours=4) < est_sunday:
         logger.debug("Sunday")
         message_channel = bot.get_channel(target_channel_id)
         logger.debug(f"Got channel {message_channel}")
         logger.debug("sunday message sent @ " + str(current_time_est))
-        await message_channel.send("gm @everyone and happy sunday https://tenor.com/view/its-sunday-bitches-gif-13992837")
+        morning_message = gavebot_character_morning("Sunday")
+        await message_channel.send(morning_message + " https://tenor.com/view/its-sunday-bitches-gif-13992837")
 
 
 async def get_gavebot_response(user, current_time, message):
