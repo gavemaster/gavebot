@@ -6,7 +6,7 @@ import pytz
 from datetime import datetime, timedelta
 from gm_logger import create_logger
 import random
-from gavemaster_open_ai import ask_something
+from gavemaster_open_ai import ask_something, gavebot_character
 
 
 logger = create_logger('gavebot')
@@ -23,118 +23,26 @@ bot = commands.Bot(command_prefix='!', intents=discord.Intents.default())
 async def on_message(message):
     if bot.user.mentioned_in(message):
         #get contents of the message without the mention
-        message_content = message.content.replace(f'<@!{bot.user.id}>', '')
-        #random int from 0 to 5
-        random_int = random.randint(0, 5)
-
-        if random_int == 0:
-            
-            logger.debug("random introspective philsopher")
-            
-            prompt = "[respond like a introspective philsopher "
-            message_length = random.randint(0,5)
-            if message_length == 0:
-                prompt += "make it short and sweet]"
-            elif message_length == 1:
-                prompt += "dont make it too short or too long]"
-            elif message_length == 2:
-                prompt += "make it long ]"
-            elif message_length == 3:
-                prompt += "make it long and deep]"
-            else:
-                prompt += "]"
-        elif random_int == 1:
-
-            logger.debug("random angry drunk")
-
-            prompt = "[respond like an angry drunk "
-            message_length = random.randint(0,5)
-            if message_length == 0:
-                prompt += "make it short and sweet]"
-            elif message_length == 1:
-                prompt += "dont make it too short or too long]"
-            elif message_length == 2:
-                prompt += "make it long ]"
-            elif message_length == 3:
-                prompt += "make it long and deep]"
-            else:
-                prompt += "]"
-
-        elif random_int == 2:
-
-            logger.debug("random broke gambling addict")
-
-            prompt = "[respond like a broke gambling addict "
-            message_length = random.randint(0,5)
-            if message_length == 0:
-                prompt += "make it short and sweet]"
-            elif message_length == 1:
-                prompt += "dont make it too short or too long]"
-            elif message_length == 2:
-                prompt += "make it long ]"
-            elif message_length == 3:
-                prompt += "make it long and deep]"
-            else:
-                prompt += "]"
+        message_content = message.content.replace(f'<@!{bot.user.id}>', 'bro')
+        logger.debug(f"message content: {message_content}")
         
-        elif random_int == 3:
-
-            logger.debug("random ghetto hoodrat")
-
-            prompt = "[respond like a ghetto hoodrat using alot of slang "
-            message_length = random.randint(0,5)
-            if message_length == 0:
-                prompt += "make it short and sweet]"
-            elif message_length == 1:
-                prompt += "dont make it too short or too long]"
-            elif message_length == 2:
-                prompt += "make it long ]"
-            elif message_length == 3:
-                prompt += "make it long and deep]"
-            else:
-                prompt += "]"
-
-        elif random_int == 4:
-            
-            logger.debug("random guy who hates himself and the world")
-
-            prompt = "[respond like a guy who hates himself and the world "
-            message_length = random.randint(0,5)
-            if message_length == 0:
-                prompt += "make it short and sweet]"
-            elif message_length == 1:
-                prompt += "dont make it too short or too long]"
-            elif message_length == 2:
-                prompt += "make it long ]"
-            elif message_length == 3:
-                prompt += "make it long and deep]"
-            else:
-                prompt += "]"
-
-
-        elif random_int == 5:
-
-            logger.debug("random sports fan")
-
-            prompt = "[respond like an a random sports fan "
-            message_length = random.randint(0,5)
-            if message_length == 0:
-                prompt += "make it short and sweet]"
-            elif message_length == 1:
-                prompt += "dont make it too short or too long]"
-            elif message_length == 2:
-                prompt += "make it long ]"
-            elif message_length == 3:
-                prompt += "make it long and deep]"
-            else:
-                prompt += "]"
+        #get eastern standard time and day of the week format it in a string "DAY, HH:MM"
+        est_tz = pytz.timezone('US/Eastern')
+        current_time = datetime.now(est_tz)
+        day_of_week = current_time.weekday()
+        #format datetime to "DAY, HH:MM"
+        current_time = current_time.strftime("%A, %H:%M")
         
-        prompt += message_content
-        logger.debug(f"prompt: {prompt}")
-        response = ask_something(prompt)
-        rtResponse = message.author.mention + " " + response
-        logger.debug(f"response: {rtResponse}")
-        await message.channel.send(rtResponse)
+
+        #store author @ name for response
+        author = message.author.mention
+
+
+        response = await get_gavebot_response(author, current_time, message_content)
+        
+        #check to see if response it too long for discord message
+        
+        await message.channel.send(response)
 
 
 
@@ -204,6 +112,9 @@ async def gmEveryone():
         await message_channel.send("gm @everyone and happy sunday https://tenor.com/view/its-sunday-bitches-gif-13992837")
 
 
+async def get_gavebot_response(user, current_time, message):
+    response = gavebot_character(current_time, message)
+    return user + ' ' + response
 
 @gmEveryone.before_loop
 async def before():
