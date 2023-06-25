@@ -1,12 +1,14 @@
 import logging
-
+import os
 
 #function to create logger with all logging levels and saves to a folder called logs with a file name (name).log
 def create_logger(name):
+
+    delete_log(name)
     logger = logging.getLogger(name)
     logger.setLevel(logging.DEBUG)
 
-    # create file handler which logs even debug messages
+    # create file handler which logs even debug messages 
     fh = logging.FileHandler('logs/' + name + '.log')
     fh.setLevel(logging.DEBUG)
 
@@ -24,3 +26,10 @@ def create_logger(name):
     logger.addHandler(ch)
 
     return logger
+
+
+
+#function to delete the log file given a log file name
+def delete_log(name):
+    os.remove('logs/' + name + '.log')
+    print("log deleted")

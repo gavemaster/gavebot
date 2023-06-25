@@ -4,9 +4,9 @@ from dotenv import load_dotenv
 import os
 import pytz
 from datetime import datetime, timedelta
+from gavemaster_langchain import gavebot_simple_sequential, run_chain
 from gm_logger import create_logger
-import random
-from gavemaster_open_ai import ask_something, gavebot_character, gavebot_character_morning
+from gavemaster_open_ai import gavebot_character, gavebot_character_morning
 
 
 logger = create_logger('gavebot')
@@ -17,28 +17,26 @@ target_channel_id = int(os.getenv('GAVE_DIGITAL_POTD_ID'))
 
 
 bot = commands.Bot(command_prefix='!', intents=discord.Intents.default())
-
+gavebot_chain = gavebot_simple_sequential(1.2)
 
 @bot.event 
 async def on_message(message):
-    if bot.user.mentioned_in(message):
-        #get contents of the message without the mention
-        message_content = message.content.replace(f'<@!{bot.user.id}>', 'bro')
-        logger.debug(f"message content: {message_content}")
-        
-        #get eastern standard time and day of the week format it in a string "DAY, HH:MM"
-        est_tz = pytz.timezone('US/Eastern')
-        current_time = datetime.now(est_tz)
-        day_of_week = current_time.weekday()
-        #format datetime to "DAY, HH:MM"
-        current_time = current_time.strftime("%A, %H:%M")
-        
+    
 
+    formatted_message = await format_message(message)
+
+    logger.debug(formatted_message)
+
+    if message.author == bot.user:
+        return
+
+    if bot.user.mentioned_in(message) or "gavebot" in message.content.lower():
+    
         #store author @ name for response
         author = message.author.mention
 
 
-        response = await get_gavebot_response(author, current_time, message_content)
+        response = await run_chain(gavebot_chain, formatted_message)
         
         #check to see if response it too long for discord message
         
@@ -123,6 +121,28 @@ async def get_gavebot_response(user, current_time, message):
     response = gavebot_character(current_time, message)
     return user + ' ' + response
 
+
+
+
+async def format_message(message):
+
+    #get the current time in eastern standard time in format "DAYOFWEEK, MONTH DAY, HH:MM" 
+    est_tz = pytz.timezone('US/Eastern')
+    current_time = datetime.now(est_tz)
+    current_time = current_time.strftime("%A, %B %d, %H:%M")
+    if bot.user.mentioned_in(message):
+        message_content = message.content.replace(bot.user.mention, "gavebot")
+    else:
+        message_content = message.content
+
+    response = "( " + str(current_time) + " ) " + message.author.name + ": " + message_content
+    print(response)
+    return response
+
+
+
+
+
 @gmEveryone.before_loop
 async def before():
     logger.debug("wating for bot....")
@@ -133,4 +153,6 @@ async def before():
 async def on_ready():
     logger.debug('Bot is ready and logged in')
     gmEveryone.start()
+    
+
 bot.run(token)
