@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 import os
 import pytz
 from datetime import datetime, timedelta
-from gavemaster_langchain import gavebot_simple_sequential, run_chain
+from gavemaster_langchain import gavebot_simple_sequential, gavebot_stocks_and_sports, run_agent, run_chain
 from gm_logger import create_logger
 from gavemaster_open_ai import gavebot_character, gavebot_character_morning
 
@@ -16,32 +16,40 @@ token = os.getenv('DISCORD_TOKEN')
 target_channel_id = int(os.getenv('GAVE_DIGITAL_POTD_ID'))
 
 
-bot = commands.Bot(command_prefix='!', intents=discord.Intents.default())
+bot = commands.Bot(command_prefix='!', intents=discord.Intents.all())
 gavebot_chain = gavebot_simple_sequential(1.2)
+sport_stocks_agent =gavebot_stocks_and_sports(1.2)
 
 @bot.event 
 async def on_message(message):
+   
+
     
-
-    formatted_message = await format_message(message)
-
-    logger.debug(formatted_message)
-
+    
     if message.author == bot.user:
         return
+    
+    if message.content.startswith('!ask'):
+        logger.debug("asking gavebot a question")
+
+        response = await run_agent(sport_stocks_agent, message.content)
+
+        await message.channel.send(response)
 
     if bot.user.mentioned_in(message) or "gavebot" in message.content.lower():
+        formatted_message = await format_message(message)
+
+        logger.debug(formatted_message)
     
         #store author @ name for response
         author = message.author.mention
 
 
         response = await run_chain(gavebot_chain, formatted_message)
-        
+       
         #check to see if response it too long for discord message
         
         await message.channel.send(response)
-
 
 
 @tasks.loop(hours=4)
@@ -139,10 +147,6 @@ async def format_message(message):
     print(response)
     return response
 
-
-
-
-
 @gmEveryone.before_loop
 async def before():
     logger.debug("wating for bot....")
@@ -152,6 +156,7 @@ async def before():
 @bot.event
 async def on_ready():
     logger.debug('Bot is ready and logged in')
+    await target_channel_id.send("new gavebot version is here..... use '!ask' to ask gavebot a question... currently has data on current stocks and sports gamesS")
     gmEveryone.start()
     
 
