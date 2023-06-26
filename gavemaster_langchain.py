@@ -4,12 +4,12 @@ import os
 from dotenv import load_dotenv, find_dotenv
 from langchain.llms import OpenAI
 from langchain.chains import LLMChain
-from myprompts import interpret_prompt, response_prompt
+from myprompts import interpret_prompt, response_prompt, agent_wikipedia_prompt
 from langchain import PromptTemplate
 from langchain.chains import SimpleSequentialChain
 from typing import Any, List
 from pydantic import BaseModel, Field
-
+from langchain.agents import load_tools
 from langchain.tools import BaseTool
 from typing import Optional, Type
 from langchain.agents import initialize_agent, Tool
@@ -123,10 +123,23 @@ def gavebot_simple_sequential(tempature):
     return overall_chain
 
 
+def wikiBacked_gavebot(tempature):
+    llm = OpenAI(temperature=tempature)
+    tools =  load_tools(["wikipedia","llm-math"],
+    llm=llm)
+    agent=initialize_agent(tools=tools, llm=llm, agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION, verbose=True)
 
-async def run_chain(chain, input):
-    response = chain.run(input=input)
-    return response
+    agent.agent.llm_chain.prompt.template = agent_wikipedia_prompt
+
+    return agent
+
+async def run_chain(chain, input, option):
+    if option == 'wiki':
+        response = chain.run(input=input)
+        return response
+    else:
+        response = chain.run(input=input)
+        return response
             
     
 

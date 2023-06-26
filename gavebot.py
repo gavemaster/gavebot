@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 import os
 import pytz
 from datetime import datetime, timedelta
-from gavemaster_langchain import gavebot_simple_sequential, gavebot_stocks_and_sports, run_agent, run_chain
+from gavemaster_langchain import gavebot_simple_sequential, gavebot_stocks_and_sports, run_agent, run_chain, wikiBacked_gavebot
 from gm_logger import create_logger
 from gavemaster_open_ai import gavebot_character, gavebot_character_morning
 
@@ -19,12 +19,10 @@ target_channel_id = int(os.getenv('GAVE_DIGITAL_POTD_ID'))
 bot = commands.Bot(command_prefix='!', intents=discord.Intents.all())
 gavebot_chain = gavebot_simple_sequential(1.2)
 sport_stocks_agent =gavebot_stocks_and_sports(1.2)
+wiki_gavebot = wikiBacked_gavebot(1.2)
 
 @bot.event 
 async def on_message(message):
-   
-
-    
     
     if message.author == bot.user:
         return
@@ -45,7 +43,7 @@ async def on_message(message):
         author = message.author.mention
 
 
-        response = await run_chain(gavebot_chain, formatted_message)
+        response = await run_chain(wiki_gavebot, formatted_message, 'wiki')
        
         #check to see if response it too long for discord message
         
@@ -134,10 +132,12 @@ async def get_gavebot_response(user, current_time, message):
 
 async def format_message(message):
 
-    #get the current time in eastern standard time in format "DAYOFWEEK, MONTH DAY, HH:MM" 
+    #get the current time in eastern standard time in format "DAYOFWEEK, MONTH-DAY-YEAR , HH:MM" 
+   
     est_tz = pytz.timezone('US/Eastern')
     current_time = datetime.now(est_tz)
-    current_time = current_time.strftime("%A, %B %d, %H:%M")
+    current_time = current_time.strftime("%A, %B-%d-%Y , %H:%M")
+
     if bot.user.mentioned_in(message):
         message_content = message.content.replace(bot.user.mention, "gavebot")
     else:
@@ -156,7 +156,7 @@ async def before():
 @bot.event
 async def on_ready():
     logger.debug('Bot is ready and logged in')
-    await target_channel_id.send("new gavebot version is here..... use '!ask' to ask gavebot a question... currently has data on current stocks and sports gamesS")
+    #await target_channel_id.send("new gavebot version is here..... use '!ask' to ask gavebot a question... currently has data on current stocks and sports gamesS")
     gmEveryone.start()
     
 
