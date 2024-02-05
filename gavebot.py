@@ -5,13 +5,14 @@ from dotenv import load_dotenv
 import os
 import pytz
 from datetime import datetime, timedelta
-from gavemaster_langchain import gavebot_simple_sequential, gavebot_stocks_and_sports, run_agent, run_chain, wikiBacked_gavebot
 from gm_logger import create_logger
-from gavemaster_open_ai import gavebot_character, gavebot_character_morning
-from dallegavebot import get_image, get_prompt_from_ai, extract_text_and_image_from_message, get_image_from_variation_dalle
 from gavebot_dj import GavebotDJ
+from dallegavebot import DalleGavebot
+from gavebot_preacher import GavebotPreacher
 import site
 import pytube
+import asyncio
+import traceback
 logger = create_logger('gavebot')
 
 load_dotenv()
@@ -23,10 +24,9 @@ sitesite= pytube.__file__
 
 
 bot = commands.Bot(command_prefix='!', intents=discord.Intents.all())
-gavebot_chain = gavebot_simple_sequential(1.2)
-sport_stocks_agent =gavebot_stocks_and_sports(1.2)
-wiki_gavebot = wikiBacked_gavebot(1.2)
+preacher = GavebotPreacher()
 dj = GavebotDJ()
+dalle = DalleGavebot()
 @bot.event 
 async def on_message(message):
     
@@ -36,37 +36,43 @@ async def on_message(message):
     if message.content.startswith('!img'):
         try:
             prompt = message.content[len('!img'):]
-            response = get_image(prompt)
+            response = dalle.get_image(prompt)
             await message.channel.send(response)
         except openai.BadRequestError as e:
             await message.channel.send("This prompt is too toxic according to sam altman.")
         except Exception as e:
             await message.channel.send(f"ERROR : {e} ")
-
-
-    if message.content.startswith('!pic'):
+        
+    if message.content.startswith('!preach'):
         try:
-            prompt = message.content[len('!pic'):]
-            image_prompt = get_prompt_from_ai(prompt)
-            logger.debug(f"{image_prompt}")
-            response = get_image(image_prompt)
-            await message.channel.send(image_prompt)
-            await message.channel.send(response)
-        except openai.BadRequestError as e:
-            await message.channel.send("This prompt is too toxic according to sam altman")
+            prompt = message.content[len('!preach'):]
+            response = preacher.preach_to_user(prompt)
+            to_user = message.author.mention
+            message_content = f"{to_user}, {response}"
+            # Join the voice channel of the user who issued the command
+            if message.author.voice:
+                voice_channel = message.author.voice.channel
+                speechName = preacher.get_text_to_speech(response)
+                voice_client = discord.utils.get(bot.voice_clients, guild=message.guild)
+                if voice_channel and voice_client is None:
+                    await voice_channel.connect()
+                    voice_client = discord.utils.get(bot.voice_clients, guild=message.guild)
+                    await preacher.playPreach(voice_client, voice_channel, speechName)
+                    
+                elif voice_channel and voice_client:
+                   await message.channel.send("the pastor is cooking and will preach soon!")
+                
+            else:
+                
+                char_limit = 2000
+                if len(message_content) > char_limit:
+                    for chunk in [message_content[i:i+char_limit] for i in range(0, len(message_content), char_limit)]:
+                        await message.channel.send(chunk)# Combining text and image URL
+                else:
+                    await message.channel.send(message_content)
         except Exception as e:
-            await message.channel.send(f"ERROR:  {e}")
-    
-    if message.content.startswith('!remix'):
-        try:
-            image_stream = extract_text_and_image_from_message(message)
-            image = get_image_from_variation_dalle( image_stream)
-            await message.channel.send(image)
-        except openai.BadRequestError as e:
-            await message.channel.send("This prompt is too toxic according to sam altman")
-        except Exception as e:
-            await message.channel.send(f"ERROR: {e}")  
-    
+            traceback.print_exc()
+            await message.channel.send(f"ERROR : {e.args}")
 
     if message.content.startswith('!play'):
         voice_channel = message.author.voice.channel
@@ -97,5 +103,5 @@ async def on_ready():
     
     
 
-
+print(token)
 bot.run(token)

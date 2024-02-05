@@ -63,10 +63,9 @@ class GavebotDJ:
 
     def add_to_queue(self, query):
         logger.debug("adding to queue")
-        file_name = query.replace(" ", "_")
-        folder_path = '/home/ubuntu/gavemaster_py/gavemaster_py/music'
+        folder_path = Path(__file__).parent        
 
-        file_path = os.path.join(folder_path, file_name)
+        file_path = os.path.join(folder_path, query)
         file_path += ".mp3"
 
         if os.path.exists(file_path):
@@ -93,6 +92,8 @@ class GavebotDJ:
         else:
             print("End of queue reached.")
 
+    
+    
     async def play_queue(self, voice_client, channel):
         while len(self.queue) > 0 and voice_client.is_connected():
             mp3_path = self.queue.pop(0)

@@ -31,5 +31,5 @@ def create_logger(name):
 
 #function to delete the log file given a log file name
 def delete_log(name):
-    os.remove('logs/' + name + '.log')
+    
     print("log deleted")
